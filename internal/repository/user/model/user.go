@@ -6,11 +6,11 @@ import (
 )
 
 type User struct {
-	ID        int64
-	Name      string
-	Password  string
-	Email     string
-	Role      int32
-	CreatedAt time.Time
-	UpdatedAt sql.NullTime
+	ID        int64        `db:"id"`
+	Name      string       `db:"name"`
+	Password  string       `db:"password"`
+	Email     string       `db:"email"`
+	Role      int32        `db:"role"`
+	CreatedAt time.Time    `db:"created_at"`
+	UpdatedAt sql.NullTime `db:"updated_at"`
 }

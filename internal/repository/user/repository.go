@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/evg555/auth/internal/client/db"
 	"github.com/evg555/auth/internal/model"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 
 	"github.com/evg555/auth/internal/repository"
@@ -23,12 +23,12 @@ const (
 )
 
 type repo struct {
-	conn *pgxpool.Pool
+	db db.Client
 }
 
-func NewRepository(conn *pgxpool.Pool) repository.UserRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{
-		conn: conn,
+		db: db,
 	}
 }
 
@@ -52,7 +52,12 @@ func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 		return id, err
 	}
 
-	res := r.conn.QueryRow(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Create",
+		QueryRaw: query,
+	}
+
+	res := r.db.DB().QueryRawContext(ctx, q, args...)
 
 	err = res.Scan(&id)
 	if err != nil {
@@ -69,7 +74,8 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	builderSelect := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: id})
+		Where(sq.Eq{idColumn: id}).
+		Limit(1)
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
@@ -77,8 +83,12 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 		return nil, err
 	}
 
-	err = r.conn.QueryRow(ctx, query, args...).Scan(
-		&user.ID, &user.Name, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
 		log.Printf("failed to select from database: %v", err)
 		return nil, err
@@ -106,7 +116,12 @@ func (r *repo) Update(ctx context.Context, user *model.User) error {
 		return err
 	}
 
-	_, err = r.conn.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Update",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		log.Printf("failed to update database: %v", err)
 		return err
@@ -126,7 +141,12 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	_, err = r.conn.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Delete",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		log.Printf("failed to delete from database: %v", err)
 		return err
