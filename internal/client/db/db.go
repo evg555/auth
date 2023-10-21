@@ -6,6 +6,8 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+type Handler func(ctx context.Context) error
+
 type Client interface {
 	DB() DB
 	Close() error
@@ -14,6 +16,14 @@ type Client interface {
 type Query struct {
 	Name     string
 	QueryRaw string
+}
+
+type Transactor interface {
+	BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error)
+}
+
+type TxManager interface {
+	ReadComitted(ctx context.Context, f Handler) error
 }
 
 type SQLExecutor interface {
@@ -39,5 +49,6 @@ type Pinger interface {
 type DB interface {
 	SQLExecutor
 	Pinger
+	Transactor
 	Close()
 }

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/evg555/auth/internal/client/db"
 	"github.com/evg555/auth/internal/model"
@@ -11,7 +12,7 @@ import (
 )
 
 const (
-	tableName = "users"
+	tableNameUsers = "users"
 
 	idColumn        = "id"
 	nameColumn      = "name"
@@ -20,6 +21,11 @@ const (
 	roleColumn      = "role"
 	createdAtColumn = "created_at"
 	updatedAtColumn = "updated_at"
+
+	tableNameLogs = "logs"
+
+	methodColumn = "method"
+	dataColumn   = "data"
 )
 
 type repo struct {
@@ -35,7 +41,7 @@ func NewRepository(db db.Client) repository.UserRepository {
 func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 	var id int64
 
-	builderInsert := sq.Insert(tableName).
+	builderInsert := sq.Insert(tableNameUsers).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, passwordColumn, roleColumn).
 		Values(
@@ -72,7 +78,7 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	var user model.User
 
 	builderSelect := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
-		From(tableName).
+		From(tableNameUsers).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: id}).
 		Limit(1)
@@ -98,7 +104,7 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 }
 
 func (r *repo) Update(ctx context.Context, user *model.User) error {
-	builderUpdate := sq.Update(tableName).PlaceholderFormat(sq.Dollar)
+	builderUpdate := sq.Update(tableNameUsers).PlaceholderFormat(sq.Dollar)
 
 	if user.Name.Valid {
 		builderUpdate = builderUpdate.Set(nameColumn, user.Name.String)
@@ -131,7 +137,7 @@ func (r *repo) Update(ctx context.Context, user *model.User) error {
 }
 
 func (r *repo) Delete(ctx context.Context, id int64) error {
-	builderDelete := sq.Delete(tableName).
+	builderDelete := sq.Delete(tableNameUsers).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: id})
 
@@ -149,6 +155,40 @@ func (r *repo) Delete(ctx context.Context, id int64) error {
 	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		log.Printf("failed to delete from database: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *repo) Log(ctx context.Context, method string, user *model.User) error {
+	userJson, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	builderInsert := sq.Insert(tableNameLogs).
+		PlaceholderFormat(sq.Dollar).
+		Columns(methodColumn, dataColumn).
+		Values(
+			method,
+			string(userJson),
+		)
+
+	query, args, err := builderInsert.ToSql()
+	if err != nil {
+		log.Printf("failed to insert to database: %v", err)
+		return err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.Log",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
+	if err != nil {
+		log.Printf("failed to update database: %v", err)
 		return err
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/evg555/auth/internal/client/db"
 	"github.com/evg555/auth/internal/client/db/pg"
+	"github.com/evg555/auth/internal/client/db/transaction"
 	"github.com/evg555/auth/internal/closer"
 	"github.com/evg555/auth/internal/config"
 	"github.com/evg555/auth/internal/repository"
@@ -20,6 +21,7 @@ type serviceProvider struct {
 	grpcConfig config.GRPCConfig
 
 	db             db.Client
+	txManager      db.TxManager
 	userRepository repository.UserRepository
 
 	userService service.UserService
@@ -31,7 +33,7 @@ func NewServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
-func (s *serviceProvider) GetPGConfig() config.PGConfig {
+func (s *serviceProvider) PgConfig() config.PGConfig {
 	if s.pgConfig == nil {
 		cfg, err := config.NewPGConfig()
 		if err != nil {
@@ -44,7 +46,7 @@ func (s *serviceProvider) GetPGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
-func (s *serviceProvider) GetGRPCConfig() config.GRPCConfig {
+func (s *serviceProvider) GrpcConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := config.NewGRPCConfig()
 		if err != nil {
@@ -57,11 +59,9 @@ func (s *serviceProvider) GetGRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) GetDB() db.Client {
+func (s *serviceProvider) Db(ctx context.Context) db.Client {
 	if s.db == nil {
-		ctx := context.Background()
-
-		dbc, err := pg.New(ctx, s.GetPGConfig().DSN())
+		dbc, err := pg.New(ctx, s.PgConfig().DSN())
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -84,26 +84,34 @@ func (s *serviceProvider) GetDB() db.Client {
 	return s.db
 }
 
-func (s *serviceProvider) GetUseRepository() repository.UserRepository {
+func (s *serviceProvider) UseRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
-		s.userRepository = userRepo.NewRepository(s.GetDB())
+		s.userRepository = userRepo.NewRepository(s.Db(ctx))
 	}
 
 	return s.userRepository
 }
 
-func (s *serviceProvider) GetUserService() service.UserService {
+func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
-		s.userService = userService.NewService(s.GetUseRepository())
+		s.userService = userService.NewService(s.UseRepository(ctx), s.TxManager(ctx))
 	}
 
 	return s.userService
 }
 
-func (s *serviceProvider) GetServer() *api.Server {
+func (s *serviceProvider) Server(ctx context.Context) *api.Server {
 	if s.server == nil {
-		s.server = api.NewServer(s.GetUserService())
+		s.server = api.NewServer(s.UserService(ctx))
 	}
 
 	return s.server
+}
+
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.Db(ctx).DB())
+	}
+
+	return s.txManager
 }

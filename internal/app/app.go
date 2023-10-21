@@ -74,17 +74,17 @@ func (a *App) initServiceProvider(_ context.Context) error {
 	return nil
 }
 
-func (a *App) initGRPCServer(_ context.Context) error {
+func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpsServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
 
 	reflection.Register(a.grpsServer)
-	proto.RegisterUserV1Server(a.grpsServer, a.serviceProvider.GetServer())
+	proto.RegisterUserV1Server(a.grpsServer, a.serviceProvider.Server(ctx))
 
 	return nil
 }
 
 func (a *App) RunGRPCServer() error {
-	listener, err := net.Listen("tcp", a.serviceProvider.GetGRPCConfig().Address())
+	listener, err := net.Listen("tcp", a.serviceProvider.GrpcConfig().Address())
 	if err != nil {
 		return err
 	}
