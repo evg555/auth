@@ -12,7 +12,7 @@ WORKDIR /root
 
 ADD migrations/*.sql migrations/
 ADD docker/migrator/migration.sh .
-ADD docker/.env .
+ADD .env .
 
 RUN chmod +x migration.sh
 
