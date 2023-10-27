@@ -3,14 +3,16 @@ package app
 import (
 	"context"
 	"flag"
-	"github.com/evg555/auth/internal/closer"
-	"github.com/evg555/auth/internal/config"
-	proto "github.com/evg555/auth/pkg/user_v1"
+	"log"
+	"net"
+
+	"github.com/evg555/platform-common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
+
+	"github.com/evg555/auth/internal/config"
+	proto "github.com/evg555/auth/pkg/user_v1"
 )
 
 var configPath string

@@ -2,17 +2,18 @@ package app
 
 import (
 	"context"
-	"github.com/evg555/auth/internal/client/db"
-	"github.com/evg555/auth/internal/client/db/pg"
-	"github.com/evg555/auth/internal/client/db/transaction"
-	"github.com/evg555/auth/internal/closer"
-	"github.com/evg555/auth/internal/config"
-	"github.com/evg555/auth/internal/repository"
-	"github.com/evg555/auth/internal/service"
 	"log"
 
+	"github.com/evg555/platform-common/pkg/closer"
+	"github.com/evg555/platform-common/pkg/db"
+	"github.com/evg555/platform-common/pkg/db/pg"
+	"github.com/evg555/platform-common/pkg/db/transaction"
+
 	"github.com/evg555/auth/internal/api"
+	"github.com/evg555/auth/internal/config"
+	"github.com/evg555/auth/internal/repository"
 	userRepo "github.com/evg555/auth/internal/repository/user"
+	"github.com/evg555/auth/internal/service"
 	userService "github.com/evg555/auth/internal/service/user"
 )
 

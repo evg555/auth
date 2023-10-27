@@ -2,19 +2,21 @@ package tests
 
 import (
 	"context"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/evg555/auth/internal/client/db"
-	"github.com/evg555/auth/internal/client/db/transaction"
-	"github.com/evg555/auth/internal/repository"
+	"github.com/evg555/platform-common/pkg/db"
+	"github.com/evg555/platform-common/pkg/db/pg"
+	"github.com/evg555/platform-common/pkg/db/transaction"
 	"github.com/gojuno/minimock/v3"
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
-	"testing"
 
-	dbMock "github.com/evg555/auth/internal/client/db/mocks"
 	"github.com/evg555/auth/internal/model"
+	"github.com/evg555/auth/internal/repository"
 	repoMock "github.com/evg555/auth/internal/repository/mocks"
+	dbMock "github.com/evg555/auth/internal/service/mocks"
 	userServ "github.com/evg555/auth/internal/service/user"
 )
 
@@ -37,7 +39,6 @@ func TestDelete(t *testing.T) {
 
 		repoErr = errors.New("repository error")
 		method  = "delete"
-		txKey   = "tx"
 
 		opts = pgx.TxOptions{IsoLevel: pgx.ReadCommitted}
 
@@ -103,7 +104,7 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			txManagerMock := tt.txManagerFunc(mc)
-			ctxNew := context.WithValue(ctx, txKey, TxMock{})
+			ctxNew := context.WithValue(ctx, pg.TxKey, TxMock{})
 			userRepoMock := tt.userRepoMockFunc(ctxNew, mc)
 			serv := userServ.NewService(userRepoMock, txManagerMock)
 

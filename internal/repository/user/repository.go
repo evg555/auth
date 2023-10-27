@@ -3,11 +3,12 @@ package user
 import (
 	"context"
 	"encoding/json"
-	sq "github.com/Masterminds/squirrel"
-	"github.com/evg555/auth/internal/client/db"
-	"github.com/evg555/auth/internal/model"
 	"log"
 
+	sq "github.com/Masterminds/squirrel"
+	"github.com/evg555/platform-common/pkg/db"
+
+	"github.com/evg555/auth/internal/model"
 	"github.com/evg555/auth/internal/repository"
 )
 
