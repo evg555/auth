@@ -77,7 +77,7 @@ func TestDelete(t *testing.T) {
 			},
 		},
 		{
-			name: "error case",
+			name: "repo error case",
 			args: args{
 				ctx: ctx,
 				id:  id,
@@ -86,6 +86,27 @@ func TestDelete(t *testing.T) {
 			userRepoMockFunc: func(ctx context.Context, mc *minimock.Controller) repository.UserRepository {
 				mock := repoMock.NewUserRepositoryMock(mc)
 				mock.DeleteMock.Expect(ctx, id).Return(repoErr)
+				return mock
+			},
+			txManagerFunc: func(mc *minimock.Controller) db.TxManager {
+				mock := dbMock.NewTransactorMock(mc)
+				mock.BeginTxMock.Expect(ctx, opts).Return(TxMock{}, nil)
+
+				txManager := transaction.NewTransactionManager(mock)
+				return txManager
+			},
+		},
+		{
+			name: "log error case",
+			args: args{
+				ctx: ctx,
+				id:  id,
+			},
+			err: repoErr,
+			userRepoMockFunc: func(ctx context.Context, mc *minimock.Controller) repository.UserRepository {
+				mock := repoMock.NewUserRepositoryMock(mc)
+				mock.DeleteMock.Expect(ctx, id).Return(nil)
+				mock.LogMock.Expect(ctx, method, user).Return(repoErr)
 				return mock
 			},
 			txManagerFunc: func(mc *minimock.Controller) db.TxManager {

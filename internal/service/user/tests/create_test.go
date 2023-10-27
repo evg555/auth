@@ -97,7 +97,7 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{
-			name: "error case",
+			name: "repo error case",
 			args: args{
 				ctx:  ctx,
 				user: user,
@@ -107,6 +107,28 @@ func TestCreate(t *testing.T) {
 			userRepoMockFunc: func(ctx context.Context, mc *minimock.Controller) repository.UserRepository {
 				mock := repoMock.NewUserRepositoryMock(mc)
 				mock.CreateMock.Expect(ctx, user).Return(0, repoErr)
+				return mock
+			},
+			txManagerFunc: func(mc *minimock.Controller) db.TxManager {
+				mock := dbMock.NewTransactorMock(mc)
+				mock.BeginTxMock.Expect(ctx, opts).Return(TxMock{}, nil)
+
+				txManager := transaction.NewTransactionManager(mock)
+				return txManager
+			},
+		},
+		{
+			name: "log error case",
+			args: args{
+				ctx:  ctx,
+				user: user,
+			},
+			want: 0,
+			err:  repoErr,
+			userRepoMockFunc: func(ctx context.Context, mc *minimock.Controller) repository.UserRepository {
+				mock := repoMock.NewUserRepositoryMock(mc)
+				mock.CreateMock.Expect(ctx, user).Return(id, nil)
+				mock.LogMock.Expect(ctx, method, user).Return(repoErr)
 				return mock
 			},
 			txManagerFunc: func(mc *minimock.Controller) db.TxManager {
