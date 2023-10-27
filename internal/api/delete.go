@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
-	proto "github.com/evg555/auth/pkg/user_v1"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
+
+	"google.golang.org/protobuf/types/known/emptypb"
+
+	proto "github.com/evg555/auth/pkg/user_v1"
 )
 
 func (s *Server) Delete(ctx context.Context, req *proto.DeleteRequest) (*emptypb.Empty, error) {

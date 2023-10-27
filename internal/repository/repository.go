@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/evg555/auth/internal/model"
 )
 

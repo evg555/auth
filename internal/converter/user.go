@@ -1,9 +1,10 @@
 package converter
 
 import (
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/evg555/auth/internal/model"
 	proto "github.com/evg555/auth/pkg/user_v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ToGetResponseFromService(user *model.User) *proto.GetResponse {

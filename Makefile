@@ -11,6 +11,7 @@ install-golangci-lint:
 install-deps:
 	GOBIN=${LOCAL_BIN} go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 	GOBIN=${LOCAL_BIN} go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+	GOBIN=${LOCAL_BIN} go install github.com/gojuno/minimock/v3/cmd/minimock@latest
 
 migrate-up:
 	goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} up
@@ -36,7 +37,15 @@ lint:
 build:
 	GOOS=linux GOARCH=amd64 go build -o ./bin/grpc-server ./cmd/grpc-server/main.go
 
-docker-build-and-push:
-	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/ontropos42/test-server:v0.0.1 .
-	docker login -u token -p CRgAAAAAT7M2IVc1bUBai6HdzbxITsRZGKhct7XO cr.selcloud.ru/ontropos42
-	docker push cr.selcloud.ru/ontropos42/test-server:v0.0.1
+test:
+	go clean -testcache
+	go test ./... -coverprofile=coverage.tmp.out -covermode count -coverpkg=github.com/evg555/auth/internal/setvice/...,github.com/evg555/auth/internal/api/... -count 5
+
+test-coverage:
+	go clean -testcache
+	go test ./... -coverprofile=coverage.tmp.out -covermode count -coverpkg=github.com/evg555/auth/internal/setvice/...,github.com/evg555/auth/internal/api/... -count 5
+	grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
+	rm coverage.tmp.out
+	go tool cover -html=coverage.out;
+	go tool cover -func=./coverage.out | grep "total";
+	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore

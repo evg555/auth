@@ -1,7 +1,8 @@
 package user
 
 import (
-	"github.com/evg555/auth/internal/client/db"
+	"github.com/evg555/platform-common/pkg/db"
+
 	"github.com/evg555/auth/internal/repository"
 	"github.com/evg555/auth/internal/service"
 )
