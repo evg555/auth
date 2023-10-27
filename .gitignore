@@ -1,3 +1,4 @@
 .idea
 /bin/
 docker/postgres/data
+/coverage.out

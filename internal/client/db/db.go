@@ -19,7 +19,12 @@ type Query struct {
 }
 
 type Transactor interface {
-	BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error)
+	BeginTx(ctx context.Context, opts pgx.TxOptions) (Committer, error)
+}
+
+type Committer interface {
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
 }
 
 type TxManager interface {

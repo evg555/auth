@@ -17,7 +17,7 @@ func NewTransactionManager(db db.Transactor) db.TxManager {
 }
 
 func (m *manager) transaction(ctx context.Context, opts pgx.TxOptions, fn db.Handler) (err error) {
-	tx, ok := ctx.Value(pg.TxKey).(pgx.Tx)
+	tx, ok := ctx.Value(pg.TxKey).(db.Committer)
 	if ok {
 		return fn(ctx)
 	}

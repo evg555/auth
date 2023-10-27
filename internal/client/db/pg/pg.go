@@ -87,11 +87,11 @@ func (p pg) Close() {
 	p.conn.Close()
 }
 
-func (p *pg) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
+func (p *pg) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (db.Committer, error) {
 	return p.conn.BeginTx(ctx, txOptions)
 }
 
-func MakeContextTx(ctx context.Context, tx pgx.Tx) context.Context {
+func MakeContextTx(ctx context.Context, tx db.Committer) context.Context {
 	return context.WithValue(ctx, TxKey, tx)
 }
 
