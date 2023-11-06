@@ -7,10 +7,29 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "validate/validate.proto";
 import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/evg555/auth/pkg/user_v1;user_v1";
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "User API"
+    version: "1.0.0"
+    contact: {
+      name: "Evgeniy Krylov"
+      email: "ontropos@gmail.com"
+    };
+  };
+
+  host: "localhost:8080",
+  schemes: HTTP,
+  schemes: HTTPS,
+  consumes: "application/json",
+  produces: "application/json",
+};
+
 service UserV1 {
+  // Создает нового пользователя
   rpc Create(CreateRequest) returns (CreateResponse) {
     option(google.api.http) = {
       post: "/user/v1/create"
@@ -18,18 +37,22 @@ service UserV1 {
     };
   }
 
+  // Получает пользователя
   rpc Get(GetRequest) returns (GetResponse) {
     option(google.api.http) = {
       get: "/user/v1"
     };
   }
 
+  // Обновляет пользователя
   rpc Update(UpdateRequest) returns (google.protobuf.Empty) {
     option(google.api.http) = {
         put: "/user/v1/update"
         body: "*"
     };
   }
+
+  // Удаляет пользователя
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {
     option(google.api.http) = {
       delete: "/user/v1"
@@ -38,14 +61,20 @@ service UserV1 {
 }
 
 message CreateRequest {
-  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 50}];;
+  // Имя пользователя
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 50}];
+  // Email пользователя
   string email = 2;
+  // Пароль пользователя
   string password = 3;
+  // Подтверждение пароля
   string password_confirm = 4;
+  // Роль пользователя
   Role role = 5;
 }
 
 message CreateResponse {
+  // ID пользователя
   int64 id = 1;
 }
 
@@ -55,24 +84,35 @@ enum Role {
 }
 
 message GetRequest {
+  // ID пользователя
   int64 id = 1;
 }
 
 message GetResponse {
+  // ID пользователя
   int64 id = 1;
+  // Имя пользователя
   string name = 2;
+  // Email пользователя
   string email = 3;
+  // Роль пользователя
   Role role = 4;
+  // Дата создания
   google.protobuf.Timestamp created_at = 5;
+  // Дата обновления
   google.protobuf.Timestamp updated_at = 6;
 }
 
 message UpdateRequest {
+  // ID пользователя
   int64 id = 1;
+  // Дата создания
   google.protobuf.StringValue name = 2;
+  // Дата обновления
   google.protobuf.StringValue email = 3;
 }
 
 message DeleteRequest {
+  // ID пользователя
   int64 id = 1;
 }

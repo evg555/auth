@@ -12,6 +12,8 @@ require (
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
+	github.com/rakyll/statik v0.1.7
+	github.com/rs/cors v1.10.1
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/grpc v1.58.2
