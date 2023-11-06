@@ -8,6 +8,11 @@ import (
 )
 
 func (s *Server) Create(ctx context.Context, req *proto.CreateRequest) (*proto.CreateResponse, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := s.userService.Create(ctx, converter.ToUserFromCreateRequest(req))
 	if err != nil {
 		return nil, err

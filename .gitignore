@@ -2,3 +2,4 @@
 /bin/
 docker/postgres/data
 /coverage.out
+vendor.protogen
